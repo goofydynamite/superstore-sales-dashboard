@@ -93,13 +93,93 @@ Here's every step from the raw file to the data the dashboard uses.
 
 ## Excel
 
-The workbook goes Data > Pivots > Calc > Dashboard. The pivots summarise the clean data, the Calc sheet pulls the numbers out with GETPIVOTDATA, and the Dashboard sheet just displays them.
-
-- Slicers for region, category and segment
-- A dropdown that switches the trend chart between revenue, profit and orders
-- Chart titles are formulas, so they update when you filter
-- The arrows on the KPI cards are custom number formats
-
-The region slicer doesn't filter the region chart, on purpose. That chart compares regions, so filtering it down to one would defeat the point.
+The workbook goes Data > Pivots > Calc > Dashboard. The pivots summarise the clean data, the Calc sheet pulls the numbers out with GETPIVOTDATA, and the Dashboard sheet only displays them. I used Excel 2019, so there's no UNIQUE, FILTER or XLOOKUP anywhere.
 
 Open `superstore_dashboard.xlsx` and start on the Dashboard tab. There's also a PDF in `docs/`.
+
+### Sheets
+
+| Sheet | What's on it |
+|---|---|
+| Dashboard | KPI cards, slicers, charts, top and bottom 10 tables, insights |
+| Calc | All the formulas behind the dashboard |
+| Pivots | 6 pivot tables that feed Calc |
+| Data | The clean table from PostgreSQL (`orders_clean`) |
+| Exploration | My first pivots by region and category |
+| Profiling | Row count and date range checks |
+| Orders | The raw CSV as I first imported it |
+
+### 1. Exploring the raw data (Exploration and Profiling sheets)
+
+1. Imported the raw CSV with Data > From Text/CSV (Power Query) and named the table `orders`.
+2. Checked the size with `=ROWS(orders)` (9,994) and the date range with `=MIN(orders[Order Date])` and `=MAX(orders[Order Date])`. MIN gave 0, which is how I found out the dates were text. I fixed them in Power Query with Change Type > Using Locale > English (United States).
+3. Tried `=UNIQUE(orders[Region])` to list the regions, but it gave #NAME? because Excel 2019 doesn't have it. I used a pivot table instead.
+4. Built a pivot of sales and profit by region. Excel showed the numbers in rupees with Indian commas (5,01,240), so I set a custom number format of `$#,##0,"K"` to show them as $501K.
+5. Copied the pivot and switched it to Category, then added a calculated field, Margin = `=Profit/Sales`, formatted as a percentage. This is where Furniture's 2.5% margin first showed up.
+
+### 2. Loading the clean data (Data sheet)
+
+6. Loaded `data/clean/orders_clean.csv` from PostgreSQL as a table called `orders_clean`. The dates are ISO format this time, so they came in as real dates.
+7. Added two calculated columns to the table:
+   - `month_name`: `=TEXT(C2,"mmm")`, which turns the order date into Jan, Feb...
+   - `discount_band`: `=IF(V2=0,"0%",IF(V2<=0.2,"1-20%",IF(V2<=0.4,"21-40%","41%+")))`
+
+### 3. Pivot tables (Pivots sheet)
+
+8. Built 6 pivot tables from `orders_clean`, each in a fixed place so the formulas can point at them:
+
+| Pivot | Cell | Rows | Columns | Values |
+|---|---|---|---|---|
+| A. KPIs | A3 | - | order_year | sales, returned_order_count, profit, order_count |
+| B. Monthly trend | A10 | month_name | order_year | profit, sales, order_count |
+| C. Region | A30 | region | order_year | profit, sales |
+| D. Top 10 | A42 | product_name | - | sales, profit |
+| E. Bottom 10 | A58 | product_name | - | profit, sales |
+| F. Discount | A74 | discount_band | - | profit, sales |
+
+9. For Top 10, I used Value Filters > Top 10 by Sum of sales and sorted largest to smallest. For Bottom 10, I used Value Filters > Bottom 10 by Sum of profit and sorted smallest to largest.
+10. The new `month_name` column didn't show up in the field list at first, because the pivots were still using the data as it was before I added it. Refresh fixed it.
+11. Orders are counted by adding up `order_count` (1 on the first row of each order, from the SQL view), because a normal pivot can't do a distinct count.
+
+### 4. Formulas (Calc sheet)
+
+12. Headline KPIs in row 4, read from pivot A:
+    - Revenue `=GETPIVOTDATA("Sum of sales",Pivots!$A$3)`
+    - Orders `=GETPIVOTDATA("Sum of order_count",Pivots!$A$3)`
+    - Avg order value `=C4/E4`
+    - Margin `=GETPIVOTDATA("Sum of profit",Pivots!$A$3)/C4`
+    - Return rate `=GETPIVOTDATA("Sum of returned_order_count",Pivots!$A$3)/E4`
+13. The same KPIs for 2016 (row 7) and 2017 (row 8), using the year in column B, e.g. `=GETPIVOTDATA("Sum of sales",Pivots!$A$3,"order_year",$B7)`.
+14. A change row (row 9): `=C8/C7-1` for growth, and `=I8-I7` for margin and return rate, since those are already percentages.
+15. Custom number formats for the arrows: `[Color10]▲ 0.0%;[Red]▼ 0.0%`. For return rate I swapped the colours (`[Red]▲ 0.0%;[Color10]▼ 0.0%`), because more returns is bad.
+16. A metric switcher for the trend chart:
+    - The dropdown cell (C12) is a Data Validation list of `Revenue,Profit,Orders`
+    - C13 turns it into a number: `=MATCH(C12,{"Revenue","Profit","Orders"},0)`
+    - C16:D27 hold the monthly values for 2016 and 2017. Each cell uses CHOOSE to pick one of three GETPIVOTDATA calls, depending on C13. I tried passing the field name from a cell straight into GETPIVOTDATA first, but it returned #REF!, so I switched to CHOOSE.
+    - Later I moved the dropdown onto the Dashboard header, so C12 is now just `=Dashboard!J3`
+17. A region block (B31:F34): 2016 revenue, 2017 revenue, YoY growth and margin for each region. Each formula is wrapped in IFERROR, so a slicer that hides a region shows 0 instead of an error.
+18. A discount block (B38:E41): sales, profit and margin for each discount band.
+19. Chart titles as formulas, so they change with the filters:
+    - Trend: `="2017 "&LOWER(C12)&" beat 2016 in "&SUMPRODUCT(--(D16:D27>C16:C27))&" of 12 months"`
+    - Region: uses INDEX/MATCH with MIN and MAX on the YoY column to name the weakest and strongest regions
+    - Discount: uses TEXT to put the margins for the two highest bands into the title
+
+### 5. Dashboard sheet
+
+20. Layout: gridlines and headings off, and five 22-wide columns with thin 2-wide gaps between them, so everything lines up on one grid.
+21. Header: a navy band with the title, a subtitle, and the trend metric dropdown on the right.
+22. KPI cards: each card is two linked cells, e.g. `=Calc!C4` for the value and `=Calc!C9` for the change. The formats are `$#,##0.00,,"M"` for revenue, `#,##0` for orders, `$#,##0` for AOV and `0.0%` for rates.
+23. Charts, all built from the Calc ranges:
+    - Trend: a line chart with 2017 in blue and 2016 in grey
+    - Region: a combo chart, with YoY growth as columns and margin as a line on a second axis
+    - Discount: a column chart of margin by band
+    - On the column charts I turned on Invert if Negative, so negative bars go red on their own
+    - Each chart title is linked to its title formula in Calc
+24. Tables: the top and bottom 10 link to the pivot cells (`=Pivots!A43` and so on). Long names are cut with `=IF(LEN(x)>48,LEFT(x,46)&"...",x)`. The top 10 has data bars, and the bottom 10 shows losses in red.
+25. Slicers for Region, Category and Segment, connected to the pivots through Report Connections. The Region slicer isn't connected to the region pivot (C), because that chart is meant to compare all four regions.
+26. An insights box with the three findings, notes under the tables, and a print area set to one page, so I could export the PDF.
+
+### 6. Checking
+
+27. Checked every KPI, the monthly values, the region numbers and the top and bottom 10 against the SQL results. They all match.
+28. Tested the slicers: Furniture only gives a 2.5% margin, Central only shows its margin falling from 13.5% to 5.1%, and switching the metric to Profit changes the trend title to "7 of 12 months".
