@@ -1,10 +1,23 @@
 # Superstore sales dashboard
 
+![SQL](https://img.shields.io/badge/SQL-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+![Excel](https://img.shields.io/badge/Excel-Dashboard-217346?style=for-the-badge)
+![pgAdmin](https://img.shields.io/badge/pgAdmin-4-2E5C8A?style=for-the-badge)
+
 The question I wanted to answer: which products and regions are driving growth, and which ones are slipping?
 
 I used the Kaggle Superstore dataset (US orders, 2014 to 2017). I loaded and cleaned it in PostgreSQL, then built the dashboard in Excel.
 
 ![Dashboard](docs/dashboard.png)
+
+## Tools
+
+| Tool | What I used it for |
+|---|---|
+| SQL (PostgreSQL 18, pgAdmin 4) | Loading the CSVs, data quality checks, the clean view, and all the KPI and breakdown queries (12 scripts in `sql/`) |
+| Excel 2019 | Power Query, tables with calculated columns, PivotTables, GETPIVOTDATA, CHOOSE/MATCH/INDEX, Data Validation, custom number formats, line, combo and column charts, data bars and slicers |
+
+SQL features used: `CREATE TABLE`, `COPY`, `CREATE VIEW`, `LEFT JOIN`, `GROUP BY` / `HAVING`, `CASE WHEN`, CTEs (`WITH`), window functions (`ROW_NUMBER`, `LAG`), `DATE_TRUNC`, `EXTRACT`, `LPAD`.
 
 ## Findings
 
