@@ -1,4 +1,4 @@
-# Day 1 – Profiling notes
+# Day 1 - Profiling notes
 
 ## The basics
 - Row count: 9,994 (one row = one product line in an order)

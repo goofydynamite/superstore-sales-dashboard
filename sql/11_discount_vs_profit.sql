@@ -1,5 +1,5 @@
 -- 11_discount_vs_profit.sql
--- 8. Discount vs profit: does discounting cause the losses?
+-- Margin by discount band
 SELECT CASE WHEN discount = 0    THEN '0%'
             WHEN discount <= 0.2 THEN '1-20%'
             WHEN discount <= 0.4 THEN '21-40%'

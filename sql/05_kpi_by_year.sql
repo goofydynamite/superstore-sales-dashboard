@@ -1,5 +1,5 @@
 -- 05_kpi_by_year.sql
--- 2. Same KPIs by year, with year-over-year revenue growth
+-- Same KPIs by year, with year-over-year revenue growth
 WITH yearly AS (
     SELECT order_year,
            SUM(sales)               AS revenue,

@@ -1,5 +1,5 @@
 -- 08_monthly_trend.sql
--- 5. Monthly trend
+-- Monthly trend
 SELECT order_month,
        ROUND(SUM(sales), 0)     AS revenue,
        COUNT(DISTINCT order_id) AS orders,

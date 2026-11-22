@@ -1,5 +1,5 @@
 -- 04_kpi_headline.sql
--- 1. The 5 headline KPIs (all 4 years)
+-- The 5 headline KPIs (all 4 years)
 SELECT
     ROUND(SUM(sales), 0)                                         AS total_revenue,
     COUNT(DISTINCT order_id)                                     AS orders,

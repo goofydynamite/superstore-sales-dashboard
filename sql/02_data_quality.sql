@@ -1,6 +1,5 @@
 -- 02_data_quality.sql
--- Every data-quality check in one result table. Open and press F5.
--- Each line of the result is one check: what I checked, and what I found.
+-- Data quality checks, all in one result.
 SELECT '1. Missing values (any key column)' AS check_name,
        (SELECT COUNT(*) FROM orders
         WHERE order_id IS NULL OR order_date IS NULL OR customer_id IS NULL

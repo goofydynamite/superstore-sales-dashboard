@@ -1,5 +1,5 @@
 -- 06_region_yoy.sql
--- 3. Region by year: who is growing, who is declining?
+-- Region revenue, 2016 vs 2017
 SELECT region,
        ROUND(SUM(CASE WHEN order_year = 2016 THEN sales END), 0) AS revenue_2016,
        ROUND(SUM(CASE WHEN order_year = 2017 THEN sales END), 0) AS revenue_2017,

@@ -1,5 +1,5 @@
 -- 03_clean_view.sql
--- One clean, analysis-ready view. The Excel dashboard will be built from this.
+-- Clean view that the Excel dashboard is built from.
 DROP VIEW IF EXISTS orders_clean;
 CREATE VIEW orders_clean AS
 SELECT

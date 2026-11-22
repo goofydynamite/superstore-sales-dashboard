@@ -1,4 +1,4 @@
-# Day 2 – SQL notes (PostgreSQL)
+# Day 2 - SQL notes (PostgreSQL)
 
 ## What I did
 1. Loaded the orders CSV (9,994 rows) and a Returns table (296 returned orders) into Postgres.
@@ -34,7 +34,7 @@ Revenue and margin match the Excel pivots from Day 1.
 ## Growth by year
 | Year | Revenue | Orders | AOV | Margin | Growth |
 |---|---|---|---|---|---|
-| 2014 | $484K | 969 | $500 | 10.2% | – |
+| 2014 | $484K | 969 | $500 | 10.2% | - |
 | 2015 | $471K | 1,038 | $453 | 13.1% | -2.8% |
 | 2016 | $609K | 1,315 | $463 | 13.4% | +29.5% |
 | 2017 | $733K | 1,687 | $435 | 12.7% | +20.4% |

@@ -1,5 +1,5 @@
 -- 07_category_yoy.sql
--- 4. Category by year
+-- Category by year
 SELECT category,
        ROUND(SUM(CASE WHEN order_year = 2016 THEN sales END), 0) AS revenue_2016,
        ROUND(SUM(CASE WHEN order_year = 2017 THEN sales END), 0) AS revenue_2017,

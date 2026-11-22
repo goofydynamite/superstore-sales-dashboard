@@ -1,5 +1,5 @@
 -- 09_top10_products.sql
--- 6. Top 10 products by revenue
+-- Top 10 products by revenue
 SELECT product_name,
        category,
        ROUND(SUM(sales), 0)                     AS revenue,

@@ -1,5 +1,5 @@
 -- 10_bottom10_products.sql
--- 7. Bottom 10 products by profit (where margin is being lost)
+-- Bottom 10 products by profit 
 SELECT product_name,
        category,
        ROUND(SUM(sales), 0)                     AS revenue,
